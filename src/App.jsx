@@ -1,7 +1,9 @@
 import "./App.css";
 
 function App() {
-
+debugger
+setTimeout(() => {
+  
   const observer = new IntersectionObserver(entries =>{
     const boxElm = entries[0];
     const isIntersecting = boxElm.isIntersecting;
@@ -9,6 +11,9 @@ function App() {
   })
 
   observer.observe(document.getElementById("box"))
+
+}, 3000);
+
   return (
     <>
       <div id="box"

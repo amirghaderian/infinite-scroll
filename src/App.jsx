@@ -5,18 +5,39 @@ import Comment from "./components/Comment";
 const App = () => {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [lastElement, setLastElement] = useState(null);
+  const [page, setPage] = useState(1);
   const fetchData = async () => {
     setLoading(true);
     const data = await (
-      await axios.get("https://react-mini-projects-api.classbon.com/Comments/1")
+      await axios.get(
+        `https://react-mini-projects-api.classbon.com/Comments/${page}`
+      )
     ).data;
-    setComments(data);
-   
+    data.length === 0
+      ? setLastElement(null)
+      : setComments((oldData) => [...oldData, ...data]);
+
     setLoading(false);
   };
+  const observerRef = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) {
+      setPage((currentPage) => currentPage + 1);
+    }
+  });
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [page]);
+  useEffect(() => {
+    if (lastElement) {
+      observerRef.observe(lastElement);
+    }
+    return () => {
+      if (lastElement) {
+        observerRef.unobserve(lastElement);
+      }
+    };
+  }, [lastElement]);
 
   return (
     <div className="container pt-5">
@@ -76,12 +97,17 @@ const App = () => {
       <hr />
       <div className="row">
         <div className="col-12 pt-5">
-          {loading ? (
+          {comments.map((c) => (
+            <div key={c.id} ref={setLastElement}>
+              <Comment {...c} />
+            </div>
+          ))}
+          {loading && (
             <div className="d-flex justify-content-center">
               <div className="spinner-border"></div>
             </div>
-          ) :comments.map((c)=><Comment key={c.id} {...c}/> )}
-         
+          )}
+          
         </div>
       </div>
     </div>
